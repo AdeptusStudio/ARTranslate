@@ -1,0 +1,31 @@
+import settings
+import discord 
+from discord.ext import commands
+import deepl
+    
+logger = settings.logging.getLogger("bot")
+
+def run():
+    intents = discord.Intents.default()
+    intents.message_content = True
+    intents.members = True
+    intents.messages = True
+    
+    bot = commands.Bot(command_prefix="!", intents = intents)
+    
+    @bot.event 
+    async def on_ready():
+        logger.info(f"User: {bot.user} (ID: {bot.user.id})")
+
+        for cog_file in settings.COG_DIR.glob("*.py"):                    
+           if cog_file != "__init__.py":                                  
+                await bot.load_extension(f"cogs.{cog_file.name[:-3]}")
+        
+        bot.tree.copy_global_to(guild = settings.GUILD_ID)
+        await bot.tree.sync(guild = settings.GUILD_ID)
+        
+      
+    bot.run(settings.DISCORD_TOKEN, root_logger=True)
+
+if __name__ == "__main__":
+    run()
